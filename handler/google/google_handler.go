@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"net/url"
 	"runtime/debug"
-	"strings"
 	"time"
 
 	"github.com/TimothyYe/godns"
@@ -78,10 +77,16 @@ func (handler *Handler) DomainLoop(domain *godns.Domain, panicChan chan<- godns.
 
 // UpdateIP update subdomain with current IP
 func (handler *Handler) UpdateIP(domain, subDomain, currentIP string) {
-	values := url.Values{}
-	values.Add("hostname", fmt.Sprintf("%s.%s", subDomain, domain))
-	values.Add("username:password", fmt.Sprintf("%s:%s", handler.Configuration.Email, handler.Configuration.Password))
-	values.Add("myip", currentIP)
+	u, err := url.Parse(GoogleUrl)
+	if err != nil {
+		log.Fatalln("Failed to parse URL: ", GoogleUrl)
+	}
+
+	q := u.Query()
+	q.Set("hostname", fmt.Sprintf("%s.%s", subDomain, domain))
+	q.Set("myip", currentIP)
+	u.RawQuery = q.Encode()
+	u.User = url.UserPassword(handler.Configuration.Email, handler.Configuration.Password)
 
 	client := &http.Client{}
 
@@ -98,7 +103,7 @@ func (handler *Handler) UpdateIP(domain, subDomain, currentIP string) {
 		httpTransport.Dial = dialer.Dial
 	}
 
-	req, _ := http.NewRequest("POST", GoogleUrl, strings.NewReader(values.Encode()))
+	req, _ := http.NewRequest("GET", u.String(), nil)
 	resp, err := client.Do(req)
 
 	if err != nil {
