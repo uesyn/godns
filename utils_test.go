@@ -46,4 +46,10 @@ func TestCheckSettings(t *testing.T) {
 	} else {
 		t.Error("HE setting without password, should be faild")
 	}
+	settingGoogle := &Settings{Provider: "Google", Password: ""}
+	if err := CheckSettings(settingGoogle); err != nil {
+		t.Log("Google setting without password, passed")
+	} else {
+		t.Error("Google setting without password, should be faild")
+	}
 }
