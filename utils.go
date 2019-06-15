@@ -195,7 +195,7 @@ func CheckSettings(config *Settings) error {
 			return errors.New("password cannot be empty")
 		}
 	} else {
-		return errors.New("please provide supported DNS provider: DNSPod/HE")
+		return errors.New("please provide supported DNS provider: DNSPod/HE/Cloudflare/AliDNS/Google")
 	}
 
 	return nil
