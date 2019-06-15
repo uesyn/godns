@@ -187,6 +187,13 @@ func CheckSettings(config *Settings) error {
 		if config.Password == "" {
 			return errors.New("password cannot be empty")
 		}
+	} else if config.Provider == GOOGLE {
+		if config.Email == "" {
+			return errors.New("email cannot be empty")
+		}
+		if config.Password == "" {
+			return errors.New("password cannot be empty")
+		}
 	} else {
 		return errors.New("please provide supported DNS provider: DNSPod/HE")
 	}
