@@ -29,7 +29,7 @@ type Settings struct {
 	Password    string   `json:"password"`
 	LoginToken  string   `json:"login_token"`
 	Domains     []Domain `json:"domains"`
-	IPUrl       string   `json:"ip_url"`
+	IPUrls      []string `json:"ip_urls"`
 	Interval    int      `json:"interval"`
 	LogPath     string   `json:"log_path"`
 	Socks5Proxy string   `json:"socks5_proxy"`

@@ -12,7 +12,7 @@ func TestLoadSetting(t *testing.T) {
 		t.Error(err.Error())
 	}
 
-	if settings.IPUrl == "" {
+	if len(settings.IPUrls) > 0 {
 		t.Error("cannot load ip_url from config file")
 	}
 

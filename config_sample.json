@@ -18,7 +18,7 @@
       ]
     }
   ],
-  "ip_url": "https://myip.biturl.top",
+  "ip_urls": [ "https://myip.biturl.top", "https://ifconfig.me", "http://globalip.me/", "http://inet-ip.info" ],
   "interval": 300,
   "ip_interface": "eth0",
   "socks5_proxy": "",

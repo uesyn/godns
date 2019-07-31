@@ -112,7 +112,7 @@ func GetCurrentIP(configuration *Settings) (string, error) {
 	var err error
 	var ip string
 
-	if configuration.IPUrl != "" {
+	if len(configuration.IPUrls) > 0 {
 		ip, err = GetIPOnline(configuration)
 		if err != nil {
 			log.Println("get ip online failed. Fallback to get ip from interface if possible.")
@@ -151,7 +151,14 @@ func GetIPOnline(configuration *Settings) (string, error) {
 		httpTransport.Dial = dialer.Dial
 	}
 
-	response, err := client.Get(configuration.IPUrl)
+	var response *http.Response
+	var err error
+	for _, url := range configuration.IPUrls {
+		response, err = client.Get(url)
+		if err == nil {
+			break
+		}
+	}
 
 	if err != nil {
 		log.Println("Cannot get IP...")

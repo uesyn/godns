@@ -5,7 +5,11 @@ import (
 )
 
 func TestGetCurrentIP(t *testing.T) {
-	conf := &Settings{IPUrl: "http://members.3322.org/dyndns/getip"}
+	conf := &Settings{IPUrls: []string{
+		"http://members.3322.org/dyndns/getip",
+		"http://members.3322.org/dyndns/getip",
+		},
+	}
 	ip, _ := GetCurrentIP(conf)
 
 	if ip == "" {
@@ -14,7 +18,11 @@ func TestGetCurrentIP(t *testing.T) {
 		t.Log("IP is:" + ip)
 	}
 
-	conf = &Settings{Socks5Proxy: "localhost:8899", IPUrl: "http://members.3322.org/dyndns/getip"}
+	conf = &Settings{Socks5Proxy: "localhost:8899", IPUrls: []string{
+		"http://members.3322.org/dyndns/getip",
+		"http://members.3322.org/dyndns/getip",
+		},
+	}
 	ip, err := GetCurrentIP(conf)
 
 	if ip != "" && err == nil {
