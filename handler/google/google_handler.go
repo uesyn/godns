@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net"
 	"net/http"
 	"net/url"
 	"runtime/debug"
@@ -38,8 +39,6 @@ func (handler *Handler) DomainLoop(domain *godns.Domain, panicChan chan<- godns.
 		}
 	}()
 
-	var lastIP string
-
 	for {
 		currentIP, err := godns.GetCurrentIP(handler.Configuration)
 
@@ -49,25 +48,35 @@ func (handler *Handler) DomainLoop(domain *godns.Domain, panicChan chan<- godns.
 		}
 		log.Println("currentIP is:", currentIP)
 
-		//check against locally cached IP, if no change, skip update
-		if currentIP == lastIP {
-			log.Printf("IP is the same as cached one. Skip update.\n")
-		} else {
-			lastIP = currentIP
+		for _, subDomain := range domain.SubDomains {
+			var resolvedIP string
+			fqdn := subDomain + "." + domain.DomainName
+			resolvedIPs, err := net.LookupHost(fqdn)
+			if err != nil {
+				log.Printf("couldn't lookup %s\n", fqdn)
+			}
 
-			for _, subDomain := range domain.SubDomains {
-				log.Printf("%s.%s Start to update record IP...\n", subDomain, domain.DomainName)
-				handler.UpdateIP(domain.DomainName, subDomain, currentIP)
+			if resolvedIPs != nil && len(resolvedIPs) == 1 {
+				resolvedIP = resolvedIPs[0]
+			}
 
-				// Send mail notification if notify is enabled
-				if handler.Configuration.Notify.Enabled {
-					log.Print("Sending notification to:", handler.Configuration.Notify.SendTo)
-					if err := godns.SendNotify(handler.Configuration, fmt.Sprintf("%s.%s", subDomain, domain.DomainName), currentIP); err != nil {
-						log.Println("Failed to send notificaiton")
-					}
+			if currentIP == resolvedIP {
+				log.Println("skip due to current IP == resolved IP")
+				continue
+			}
+
+			log.Printf("%s.%s Start to update record IP...\n", subDomain, domain.DomainName)
+			handler.UpdateIP(domain.DomainName, subDomain, currentIP)
+
+			// Send mail notification if notify is enabled
+			if handler.Configuration.Notify.Enabled {
+				log.Print("Sending notification to:", handler.Configuration.Notify.SendTo)
+				if err := godns.SendNotify(handler.Configuration, fmt.Sprintf("%s.%s", subDomain, domain.DomainName), currentIP); err != nil {
+					log.Println("Failed to send notificaiton")
 				}
 			}
 		}
+
 		// Sleep with interval
 		log.Printf("Going to sleep, will start next checking in %d seconds...\r\n", handler.Configuration.Interval)
 		time.Sleep(time.Second * time.Duration(handler.Configuration.Interval))
